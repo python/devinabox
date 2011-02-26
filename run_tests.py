@@ -21,6 +21,7 @@ def executable():
                 cmd = os.path.join(directory, 'PCBuild', 'AMD64', 'python_d.exe')
                 if not os.path.isfile(cmd):
                     return None
+    return os.path.abspath(cmd)
 
 if __name__ == '__main__':
     cmd = executable()
