@@ -286,8 +286,9 @@ class CPython(HgProvider):
             subprocess.check_call(['make', 'checkout'])
 
     def build(self):
+        cmd = 'make' if sys.platform != 'win32' else 'make.bat'
         with change_cwd(os.path.join(self.directory, 'Doc'):
-                subprocess.check_call(['make', 'html'])
+                subprocess.check_call([cmd, 'html'])
 
 
 if __name__ == '__main__':
