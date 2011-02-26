@@ -58,7 +58,6 @@ version of CPython.
 """
 # XXX Script to build CPython? On Windows should just open devguide to proper
 #     page?
-# XXX Vim files? Emacs files?
 # XXX README or just the docstring for this script?
 # XXX Script to run thorough test suite?
 
