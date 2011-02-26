@@ -57,7 +57,8 @@ version of CPython.
 
 """
 # XXX README or just the docstring for this script?
-# XXX Script to run thorough test suite?
+# XXX script to build CPython? multiprocessing.cpu_count(). Windows?
+# XXX script to run unit tests? multiprocessing.cpu_count()
 
 import abc
 import contextlib
@@ -237,7 +238,20 @@ class Devguide(HgProvider):
     url = 'http://hg.python.org/devguide'
     directory = 'devguide'
 
-    # XXX build (and symlink the index); use Sphinx from docs
+    def build(self):
+        """Build the devguide and symlink its index page."""
+        # Grab Sphinx from cpython/Doc/tools/
+        tools_directory = os.path.join(CPython.directory, 'Doc', 'tools')
+        orig_pythonpath = os.environ['PYTHONPATH']
+        os.environ['PYTHONPATH'] = os.path.abspath(tools_directory)
+        try:
+            with change_cwd(self.directory):
+                subprocess.check_call(['make', 'html'])
+        finally:
+            os.environ['PYTHONPATH'] = orig_pythonpath
+        index_path = os.path.join(self.directory, '_build', 'html',
+                                  'index.html')
+        os.symlink(index_path, 'devguide.html')
 
 
 class PEPs(SvnProvider):
@@ -271,10 +285,9 @@ class CPython(HgProvider):
         with change_cwd(os.path.join(self.directory, 'Doc')):
             subprocess.check_call(['make', 'checkout'])
 
-    # XXX build docs (and symlink)
-    # XXX script to build CPython? multiprocessing.cpu_count(). Windows?
-    # XXX script to run unit tests? multiprocessing.cpu_count()
-
+    def build(self):
+        with change_cwd(os.path.join(self.directory, 'Doc'):
+                subprocess.check_call(['make', 'html'])
 
 
 if __name__ == '__main__':
