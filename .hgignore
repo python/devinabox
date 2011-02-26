@@ -1,0 +1,8 @@
+syntax: glob
+
+coveragepy
+cpython
+devguide
+Mercurial
+peps
+Visual C++ Express
