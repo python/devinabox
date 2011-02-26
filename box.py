@@ -14,10 +14,6 @@ There are also some scripts provide along side this one to help get people
 started. See the README for more information.
 
 """
-# XXX README or just the docstring for this script?
-# XXX script to build CPython? multiprocessing.cpu_count(). Windows?
-# XXX script to run unit tests? multiprocessing.cpu_count()
-
 import abc
 import contextlib
 from distutils.version import LooseVersion as Version
@@ -132,8 +128,7 @@ class CoveragePy(HgProvider):
     directory = 'coveragepy'
     size = (5, None)  # XXX coverage report for CPython
 
-    # XXX script to run coverage tests?
-    # XXX 'coverage' runs coverage tests
+    # XXX build runs coverage tests
 
 
 class Mercurial(Provider):
@@ -251,6 +246,7 @@ class CPython(HgProvider):
         cmd = 'make' if sys.platform != 'win32' else 'make.bat'
         with change_cwd(os.path.join(self.directory, 'Doc')):
                 subprocess.check_call([cmd, 'html'])
+        # XXX symlink to python_docs.html
 
 
 if __name__ == '__main__':
