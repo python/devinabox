@@ -5,11 +5,8 @@ This script will create a directory which will end up containing (or remind you
 to download) everything you need to contribute to (C)Python's development (sans
 a compiler):
 
-    * Mercurial: source download
+    * Mercurial: source download & TortoiseHG for 32/64-bit Windows
         Hg is Python's VCS (Version Control System).
-
-    * TortoiseHg: Windows 32/64
-        For ease-of-use for Windows users.
 
     * Visual C++ Express: English Web installer
         So Windows users can compile CPython.
@@ -19,21 +16,21 @@ a compiler):
         Linux user should install gcc or clang using their distribution's
         package managers.
 
-    * Python Developer's Guide
-        "The devguide"; documentation on how to contribute to Python.
+    * coverage.py: cloned repository
+        For measuring the coverage of Python's test suite. Includes a
+        cloned repository instead of the latest release as cutting-edge support
+        is occasionally needed to support the in-development version of Python.
 
     * Python Enhancement Proposals
         Also known as PEPs. This is included as reference material, especially
         for PEPs 7 & 8 (the C and Python style guides, respectively).
 
+    * Python Developer's Guide
+        "The devguide"; documentation on how to contribute to Python.
+
     * CPython
         The included repository clone has branches for all versions of Python
         either under development or maintenance.
-
-    * coverage.py: cloned repository
-        For measuring the coverage of Python's test suite. Includes a
-        cloned repository instead of the latest release as cutting-edge support
-        is occasionally needed to support the in-development version of Python.
 
 Once the requisite code has been checked out, various optional steps can be
 performed to make the lives of users easier:
@@ -288,26 +285,29 @@ class CPython(HgProvider):
 
     def build(self):
         cmd = 'make' if sys.platform != 'win32' else 'make.bat'
-        with change_cwd(os.path.join(self.directory, 'Doc'):
+        with change_cwd(os.path.join(self.directory, 'Doc')):
                 subprocess.check_call([cmd, 'html'])
 
 
 if __name__ == '__main__':
     import argparse
-    parser = arparse.ArgumentParser(prog='Python-Dev In a Box')
+
+    all_providers = (CPython, Devguide, PEPs, CoveragePy, Mercurial,
+                     Visual_Studio_Express)
+    parser = argparse.ArgumentParser(prog='Python-Dev In a Box')
     subparsers = parser.add_subparsers() # XXX help
-    parser_create = subparsers.add_parser('create')  # XXX help
-    # XXX --all option
-    # XXX --basic option (everything that doesn't require a Web browser)
-    # XXX --miniumum option (cpython, devguide, peps)
+    parser_create = subparsers.add_parser('create',
+                                          help='Create a %(prog)s')
+    parser_create.add_argument('--build', action='store_true', default=False)
+    group = parser_create.add_mutually_exclusive_group()
+    group.add_argument('--all', dest='providers', action='store_const',
+                       const=all_providers,
+                       help='Provide everything (the default)')
+    group.add_argument('--basic', dest='providers', action='store_const',
+                       const=(CPython, Devguide, PEPs, CoveragePy),
+                       help='Provide the basics people probably are lacking')
+    group.add_argument('--minimum', dest='providers', action='store_const',
+                       const=(CPython, Devguide, PEPs),
+                       help='Provide the bare minimum to be productive')
     # XXX --build option
-    parser_update = subparsers.add_parser('update')  # XXX help
-    # XXX also run build
-
-
-
-    for provider in (CPython, Devguide, PEPs, Mercurial, CoveragePy,
-                     Visual_Studio_Express,):
-        print('Creating', provider.__name__.replace('_', ' '))
-        provider().create()
-        print()
+    # XXX parser_update = subparsers.add_parser('update', help='Update the %(prog)s') # XXX also run build
