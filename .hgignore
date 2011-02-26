@@ -8,6 +8,7 @@ Mercurial
 peps
 Visual C++ Express
 # Generated
+.coverage
 coverage_report
 build
 coverage.html
