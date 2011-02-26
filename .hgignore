@@ -1,11 +1,20 @@
 syntax: glob
 
+# Repositories/files
 coveragepy
 cpython
 devguide
 Mercurial
 peps
 Visual C++ Express
+# Generated
+coverage_report
+build
+coverage.html
+devguide.html
+peps.html
+python_docs.html
+# Misc
 .*.swp
 *.pyc
 *.pyo
