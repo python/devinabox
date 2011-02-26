@@ -116,13 +116,13 @@ class HgProvider(Provider):
 
     def create(self):
         """Clone an Hg repository to 'directory'."""
-        subprocess.check_call(['hg', 'clone', self.url, self.directory])
+        subprocess.check_call(['hg', '-q', 'clone', self.url, self.directory])
 
     def update(self):
         """Update the Hg clone in 'directory'."""
         with change_cwd(self.directory):
-            subprocess.check_call(['hg', 'pull'])
-            subprocess.check_call(['hg', 'update'])
+            subprocess.check_call(['hg', '-q', 'pull'])
+            subprocess.check_call(['hg', '-q', 'update'])
 
 
 class SvnProvider(Provider):
@@ -136,11 +136,12 @@ class SvnProvider(Provider):
 
     def create(self):
         """Check out the svn repository to 'directory'."""
-        subprocess.check_call(['svn', 'checkout', self.url, self.directory])
+        subprocess.check_call(['svn', 'checkout', '-q',
+                               self.url, self.directory])
 
     def update(self):
         """Update the svn checkout in 'directory'."""
-        subprocess.check_call(['svn', 'update', self.directory])
+        subprocess.check_call(['svn', 'update', '-q', self.directory])
 
 
 class Visual_Studio_Express(Provider):
@@ -300,9 +301,8 @@ if __name__ == '__main__':
     # XXX --basic option (everything that doesn't require a Web browser)
     # XXX --miniumum option (cpython, devguide, peps)
     # XXX --build option
-    # XXX --with-coverage option
     parser_update = subparsers.add_parser('update')  # XXX help
-    # XXX also run build (--with-coverage)
+    # XXX also run build
 
 
 
