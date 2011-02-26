@@ -6,3 +6,7 @@ devguide
 Mercurial
 peps
 Visual C++ Express
+.*.swp
+*.pyc
+*.pyo
+__pycache__
