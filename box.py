@@ -56,8 +56,6 @@ This script is assumed to be run by a built version of the in-development
 version of CPython.
 
 """
-# XXX Script to build CPython? On Windows should just open devguide to proper
-#     page?
 # XXX README or just the docstring for this script?
 # XXX Script to run thorough test suite?
 
@@ -274,7 +272,7 @@ class CPython(HgProvider):
             subprocess.check_call(['make', 'checkout'])
 
     # XXX build docs (and symlink)
-    # XXX script to build CPython? multiprocessing.cpu_count()
+    # XXX script to build CPython? multiprocessing.cpu_count(). Windows?
     # XXX script to run unit tests? multiprocessing.cpu_count()
 
 
