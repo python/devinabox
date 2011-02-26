@@ -1,56 +1,17 @@
+#!/usr/bin/env python3
 """Python-Dev In a Box: (almost) everything you need to contribute to (C)Python
 in under 700 MB.
 
 This script will create a directory which will end up containing (or remind you
 to download) everything you need to contribute to (C)Python's development (sans
-a compiler):
+a C compiler) through the ``create`` command. You can also "build" what is
+provided in the Box to save users some hassle (e.g., build the documentation).
 
-    * Mercurial: source download & TortoiseHG for 32/64-bit Windows
-        Hg is Python's VCS (Version Control System).
+Once a Box has been created, users of it can update what it contains (e.g.,
+update the repository of CPython).
 
-    * Visual C++ Express: English Web installer
-        So Windows users can compile CPython.
-        OS X users should install XCode (http://developer.apple.com/) and
-        optionally Homebrew (http://mxcl.github.com/homebrew/) to install
-        LLVM/clang.
-        Linux user should install gcc or clang using their distribution's
-        package managers.
-
-    * coverage.py: cloned repository
-        For measuring the coverage of Python's test suite. Includes a
-        cloned repository instead of the latest release as cutting-edge support
-        is occasionally needed to support the in-development version of Python.
-
-    * Python Enhancement Proposals
-        Also known as PEPs. This is included as reference material, especially
-        for PEPs 7 & 8 (the C and Python style guides, respectively).
-
-    * Python Developer's Guide
-        "The devguide"; documentation on how to contribute to Python.
-
-    * CPython
-        The included repository clone has branches for all versions of Python
-        either under development or maintenance.
-
-Once the requisite code has been checked out, various optional steps can be
-performed to make the lives of users easier:
-
-    * Update all cloned repositories (devguide, PEPs, CPython, coverage.py)
-
-    * Build Python's documentation (will also lead to the download of the
-    required software; requires Python to already be installed on the user's
-    machine)
-
-    * Build the devguide (requires Python's docs to be built so as to have a
-    copy of Sphinx available to use)
-
-    * Build the PEPs (requires Python to be installed)
-
-    * Generate a coverage report (requires that CPython be built)
-
-
-This script is assumed to be run by a built version of the in-development
-version of CPython.
+There are also some scripts provide along side this one to help get people
+started. See the README for more information.
 
 """
 # XXX README or just the docstring for this script?
@@ -143,7 +104,7 @@ class SvnProvider(Provider):
 
 class Visual_Studio_Express(Provider):
 
-    """Provide the Web installer for Visual C++ Express."""
+    """The Web installer for Visual C++ Express."""
 
     size = (4, None)
     directory = 'Visual C++ Express'
@@ -164,7 +125,8 @@ class Visual_Studio_Express(Provider):
 
 class CoveragePy(HgProvider):
 
-    """Cloned repository for coverage.py."""
+    """Cloned repository for coverage.py so you can generate coverage report
+    for the stdlib."""
 
     url = 'https://brettsky@bitbucket.org/ned/coveragepy'
     directory = 'coveragepy'
@@ -176,7 +138,8 @@ class CoveragePy(HgProvider):
 
 class Mercurial(Provider):
 
-    """Provide Mercurial (source release) and TortoiseHg (for Windows)."""
+    """Provide Mercurial (source release) and TortoiseHg (for Windows) so you
+    can update CPython's repository."""
 
     directory = 'Mercurial'
     size = (47, None)  # Includes TortoiseHg for 32/64-bit Windows
@@ -229,7 +192,7 @@ class Mercurial(Provider):
 
 class Devguide(HgProvider):
 
-    """Clone the Python developer's guide."""
+    """Clone of the Python developer's guide so you know what to do."""
 
     size = (1, 4)
 
@@ -254,7 +217,8 @@ class Devguide(HgProvider):
 
 class PEPs(SvnProvider):
 
-    """Checkout the Python Enhancement Proposals."""
+    """Checkout the Python Enhancement Proposals so you have the style guides
+    (PEPs 7 & 8) along with all other PEPs for reference."""
 
     url = 'http://svn.python.org/projects/peps/trunk/'
     directory = 'peps'
@@ -269,7 +233,7 @@ class PEPs(SvnProvider):
 
 class CPython(HgProvider):
 
-    """Clone CPython (and requisite tools to build the documentation)."""
+    """Clone of CPython (and requisite tools to build the documentation)."""
 
     url = 'http://hg.python.org/cpython'
     directory = 'cpython'
@@ -290,7 +254,7 @@ class CPython(HgProvider):
 
 
 if __name__ == '__main__':
-    import argparse
+    import argparse  # XXX snag from CPython repo if missing
 
     all_providers = (CPython, Devguide, PEPs, CoveragePy, Mercurial,
                      Visual_Studio_Express)
