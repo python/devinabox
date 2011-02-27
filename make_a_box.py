@@ -25,7 +25,6 @@ import urllib.parse
 import webbrowser
 import xmlrpc.client
 import build_cpython
-import run_all_tests
 
 
 def rename(new_name):
@@ -123,6 +122,7 @@ class VisualCPPExpress(Provider):
                         url, self.directory))
 
 
+# XXX test
 @rename('coverage.py')
 class CoveragePy(HgProvider):
 
@@ -135,9 +135,8 @@ class CoveragePy(HgProvider):
     def build(self):
         """Run coverage over CPython."""
         # Build Python
-        build_cpython.main()
+        executable = build_cpython.main()
         # Run coverage
-        executable = run_all_tests.executable()
         if not executable:
             print('No CPython executable found')
             sys.exit(1)
