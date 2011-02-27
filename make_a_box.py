@@ -54,6 +54,12 @@ class Provider(metaclass=abc.ABCMeta):
         """Directory to put everything."""
         raise NotImplementedError
 
+    @abc.abstractproperty
+    def size(self):
+        """Roughly how big will the thing being provided be."""
+
+    # docs points to any documentation index for the provider
+
     def _prompt(self, message):
         """Prompt the user to perform an action, waiting for a response."""
         input("{} [press Enter when done]".format(message))
@@ -65,10 +71,6 @@ class Provider(metaclass=abc.ABCMeta):
 
     def build(self):
         """Optional step to "build" something."""
-
-    def update(self):
-        """Update what is provided."""
-        pass
 
 
 class HgProvider(Provider):
