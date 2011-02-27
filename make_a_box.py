@@ -24,7 +24,8 @@ import urllib.request
 import urllib.parse
 import webbrowser
 import xmlrpc.client
-import run_coverage
+import build_cpython
+import run_all_tests
 
 
 def rename(new_name):
@@ -133,11 +134,25 @@ class CoveragePy(HgProvider):
 
     def build(self):
         """Run coverage over CPython."""
-        # XXX build python
-        # XXX run coverage
-        # XXX ``make distclean``
-        # XXX generate html
-        run_coverage.main()
+        # Build Python
+        build_cpython.main()
+        # Run coverage
+        executable = run_all_tests.executable()
+        if not executable:
+            print('No CPython executable found')
+            sys.exit(1)
+        print('Running coverage ...')
+        regrest_path = os.path.join(CPython.directory, 'Lib', 'test',
+                                    'regrtest.py')
+        subprocess.check_call([executable, self.directory, 'run', '--pylib',
+                               regrtest_path])
+        # ``make distclean`` as you don't want to distribute your own build
+        with change_cwd(CPython.directory):
+            subprocess.check_call(['make', 'distclean'])
+        # Generate the HTML report
+        print('Generating report ...')
+        subprocess.call([executable, 'coveragepy', 'html', '-i', '--omit',
+                         '"*/test/*,*/tests/*"', '-d', 'coverage_report'])
 
 
 class Mercurial(Provider):
