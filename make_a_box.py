@@ -131,6 +131,7 @@ class CoveragePy(HgProvider):
     url = 'https://brettsky@bitbucket.org/ned/coveragepy'
     directory = 'coveragepy'
     size = 133  # Includes the coverage report
+    docs = os.path.join('coverage_report', 'index.html')
 
     def build(self):
         """Run coverage over CPython."""
@@ -220,6 +221,7 @@ class PEPs(SvnProvider):
     url = 'http://svn.python.org/projects/peps/trunk/'
     directory = 'peps'
     size = 20
+    docs = os.path.join(directory, 'pep-0000.html')
 
     def build(self):
         """Build the PEPs."""
@@ -235,6 +237,7 @@ class Devguide(HgProvider):
 
     url = 'http://hg.python.org/devguide'
     directory = 'devguide'
+    docs = os.path.join(directory, '_build', 'html', 'index.html')
 
     def build(self):
         """Build the devguide using Sphinx from CPython's docs."""
@@ -259,6 +262,7 @@ class CPython(HgProvider):
     url = 'http://hg.python.org/cpython'
     directory = 'cpython'
     size = 330  # Only docs are built
+    docs = os.path.join(directory, 'Doc', 'build', 'html', 'index.html')
 
     def create(self):
         """Clone CPython and get the necessary tools to build the
@@ -303,6 +307,7 @@ if __name__ == '__main__':
     if response not in ('Y', 'y'):
         sys.exit(0)
     else:
+        print()
         for provider in desired_providers:
             ins = provider()
             print('Fetching {} ...'.format(provider.__name__))
@@ -312,4 +317,9 @@ if __name__ == '__main__':
     with open('README', 'w') as file:
         header = 'Python-Dev In a Box: created on {}\n'
         file.write(header.format(datetime.date.today()))
+        file.write('\n')
+        file.write('Documentation indices can be found at:\n')
+        for provider in desired_providers:
+            if hasattr(provider, 'docs'):
+                file.write('  {}\n'.format(provider.docs))
     sys.exit(0)
