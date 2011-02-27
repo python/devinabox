@@ -12,9 +12,6 @@ Visual C++ Express
 coverage_report
 build
 coverage.html
-devguide.html
-peps.html
-python_docs.html
 README
 # Misc
 .*.swp
