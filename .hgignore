@@ -15,6 +15,7 @@ coverage.html
 devguide.html
 peps.html
 python_docs.html
+README
 # Misc
 .*.swp
 *.pyc
