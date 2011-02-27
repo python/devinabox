@@ -130,7 +130,7 @@ class CoveragePy(HgProvider):
 
     url = 'https://brettsky@bitbucket.org/ned/coveragepy'
     directory = 'coveragepy'
-    size = 0 # XXX coverage report for CPython
+    size = 133  # Includes the coverage report
 
     def build(self):
         """Run coverage over CPython."""
