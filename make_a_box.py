@@ -143,10 +143,12 @@ class CoveragePy(HgProvider):
         print('Running coverage ...')
         regrtest_path = os.path.join(CPython.directory, 'Lib', 'test',
                                     'regrtest.py')
-        subprocess.check_call([executable, self.directory, 'run', '--pylib',
-                               regrtest_path])
-        # Clean up from the test run
-        os.rmdir('build')
+        try:
+            subprocess.check_call([executable, self.directory, 'run', '--pylib',
+                                   regrtest_path])
+        finally:
+            # Clean up from the test run
+            os.rmdir('build')
         # Generate the HTML report
         print('Generating report ...')
         subprocess.call([executable, 'coveragepy', 'html', '-i', '--omit',

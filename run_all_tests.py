@@ -11,9 +11,12 @@ def main():
     if cmd is None:
         print('CPython is not built')
         sys.exit(1)
-    subprocess.call([cmd, '-W', 'default', '-bb', '-E', '-m', 'test', '-r',
-                     '-w', '-u', 'all', '-j',
-                     str(multiprocessing.cpu_count())])
+    try:
+        subprocess.call([cmd, '-W', 'default', '-bb', '-E', '-m', 'test', '-r',
+                         '-w', '-u', 'all', '-j',
+                         str(multiprocessing.cpu_count())])
+    finally:
+        os.rmdir('build')
 
 
 if __name__ == '__main__':
