@@ -56,9 +56,8 @@ class Provider(metaclass=abc.ABCMeta):
 
     @abc.abstractproperty
     def size(self):
-        """Roughly how big will the thing being provided be."""
-
-    # docs points to any documentation index for the provider
+        """Size of what is provided (built and everything)."""
+        raise NotImplementedError
 
     def _prompt(self, message):
         """Prompt the user to perform an action, waiting for a response."""
@@ -124,7 +123,6 @@ class VisualCPPExpress(Provider):
                         url, self.directory))
 
 
-# XXX test
 @rename('coverage.py')
 class CoveragePy(HgProvider):
 
