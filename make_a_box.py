@@ -126,7 +126,7 @@ class VisualCPPExpress(Provider):
 @rename('coverage.py')
 class CoveragePy(HgProvider):
 
-    """Cloned repository of coverage.py (WARNING: building takes a while)"""
+    """Clone of coverage.py (WARNING: building takes a while)"""
 
     url = 'https://brettsky@bitbucket.org/ned/coveragepy'
     directory = 'coveragepy'
@@ -141,17 +141,20 @@ class CoveragePy(HgProvider):
             print('No CPython executable found')
             sys.exit(1)
         print('Running coverage ...')
-        regrest_path = os.path.join(CPython.directory, 'Lib', 'test',
+        regrtest_path = os.path.join(CPython.directory, 'Lib', 'test',
                                     'regrtest.py')
         subprocess.check_call([executable, self.directory, 'run', '--pylib',
                                regrtest_path])
-        # ``make distclean`` as you don't want to distribute your own build
-        with change_cwd(CPython.directory):
-            subprocess.check_call(['make', 'distclean'])
+        # Clean up from the test run
+        os.rmdir('build')
         # Generate the HTML report
         print('Generating report ...')
         subprocess.call([executable, 'coveragepy', 'html', '-i', '--omit',
                          '"*/test/*,*/tests/*"', '-d', 'coverage_report'])
+        # ``make distclean`` as you don't want to distribute your own build
+        print('Cleaning up the CPython build ...')
+        with change_cwd(CPython.directory):
+            subprocess.check_call(['make', 'distclean'])
 
 
 class Mercurial(Provider):
