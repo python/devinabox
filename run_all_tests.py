@@ -7,7 +7,7 @@ import build_cpython
 
 
 def main():
-    cmd = executable()
+    cmd = build_cpython.main()
     if cmd is None:
         print('CPython is not built')
         sys.exit(1)

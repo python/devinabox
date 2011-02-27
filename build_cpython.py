@@ -42,7 +42,7 @@ def main():
         subprocess.call(make_cmd)
     finally:
         os.chdir(cwd)
-    return executable
+    return executable()
 
 if __name__ == '__main__':
     if not main():
