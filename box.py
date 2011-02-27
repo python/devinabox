@@ -2,24 +2,24 @@
 """Python-Dev In a Box: (almost) everything you need to contribute to (C)Python
 in under 700 MB.
 
-This script will create a directory which will end up containing (or remind you
-to download) everything you need to contribute to (C)Python's development (sans
-a C compiler) through the ``create`` command. You can also "build" what is
-provided in the Box to save users some hassle (e.g., build the documentation).
+This script will clone, checkout, download, or ask you to download everything
+you need to contribute to (C)Python's development short of a C compiler. It
+will also "build" everything so that users do not need to do **everything**
+from scratch. This also allows for easy offline use.
 
-Once a Box has been created, users of it can update what it contains (e.g.,
-update the repository of CPython).
-
-There are also some scripts provide along side this one to help get people
-started. See the README for more information.
+There are also some scripts provided along side this one to help in executing
+common tasks.
 
 """
 import abc
 import contextlib
+import datetime
 from distutils.version import LooseVersion as Version
+import operator
 import os
 import os.path
 import subprocess
+import sys
 import urllib.request
 import urllib.parse
 import webbrowser
@@ -53,6 +53,9 @@ class Provider(metaclass=abc.ABCMeta):
     def create(self):
         """Create what is to be provided."""
         raise NotImplementedError
+
+    def build(self):
+        """Optional step to "build" something."""
 
     def update(self):
         """Update what is provided."""
@@ -98,11 +101,11 @@ class SvnProvider(Provider):
         subprocess.check_call(['svn', 'update', '-q', self.directory])
 
 
-class Visual_Studio_Express(Provider):
+class VisualCPPExpress(Provider):
 
-    """The Web installer for Visual C++ Express."""
+    """The Web installer for Visual C++ Express"""
 
-    size = (4, None)
+    size = 4
     directory = 'Visual C++ Express'
 
     def create(self):
@@ -116,28 +119,29 @@ class Visual_Studio_Express(Provider):
             webbrowser.open(url)
         except webbrowser.Error:
             pass
-        self._prompt('download Visual C++ Express at {}'.format(url))
+        self._prompt('download Visual C++ Express at {} and put in {}'.format(
+                        url, self.directory))
+VisualCPPExpress.__name__ = 'Visual C++ Express'
 
 
 class CoveragePy(HgProvider):
 
-    """Cloned repository for coverage.py so you can generate coverage report
-    for the stdlib."""
+    """Cloned repository of coverage.py (WARNING: building takes a while)"""
 
     url = 'https://brettsky@bitbucket.org/ned/coveragepy'
     directory = 'coveragepy'
-    size = (5, None)  # XXX coverage report for CPython
+    size = 0 # XXX coverage report for CPython
 
     # XXX build runs coverage tests
+CoveragePy.__name__ = 'coverage.py'
 
 
 class Mercurial(Provider):
 
-    """Provide Mercurial (source release) and TortoiseHg (for Windows) so you
-    can update CPython's repository."""
+    """Source release of Mercurial along with TortoiseHg"""
 
     directory = 'Mercurial'
-    size = (47, None)  # Includes TortoiseHg for 32/64-bit Windows
+    size = 47  # Includes TortoiseHg for 32/64-bit Windows
 
     def _download_url(self):
         """Discover the URL to download Mercurial from."""
@@ -172,7 +176,8 @@ class Mercurial(Provider):
             webbrowser.open(url)
         except webbrowser.Error:
             pass
-        self._prompt('Download TortoiseHg from {}'.format(url))
+        self._prompt('Download TortoiseHg from {} and put in {}'.format(url,
+                         self.directory))
 
     def create(self):
         """Fetch the latest source distribution for Mercurial."""
@@ -184,12 +189,26 @@ class Mercurial(Provider):
         self._create_tortoisehg()
 
 
+class PEPs(SvnProvider):
+
+    """Checkout of the Python Enhancement Proposals (for PEPs 7 & 8)"""
+
+    url = 'http://svn.python.org/projects/peps/trunk/'
+    directory = 'peps'
+    size = 20
+
+    def build(self):
+        """Build the PEPs and symlink PEP 0."""
+        with change_cwd(self.directory):
+            subprocess.check_call(['make'])
+        os.symlink(os.path.join(self.directory, 'pep-0000.html'), 'peps.html')
+
 
 class Devguide(HgProvider):
 
-    """Clone of the Python developer's guide so you know what to do."""
+    """Clone of the Python Developer's Guide"""
 
-    size = (1, 4)
+    size = 4
 
     url = 'http://hg.python.org/devguide'
     directory = 'devguide'
@@ -210,30 +229,13 @@ class Devguide(HgProvider):
         os.symlink(index_path, 'devguide.html')
 
 
-class PEPs(SvnProvider):
-
-    """Checkout the Python Enhancement Proposals so you have the style guides
-    (PEPs 7 & 8) along with all other PEPs for reference."""
-
-    url = 'http://svn.python.org/projects/peps/trunk/'
-    directory = 'peps'
-    size = (14, 20)
-
-    def build(self):
-        """Build the PEPs and symlink PEP 0."""
-        with change_cwd(self.directory):
-            subprocess.check_call(['make'])
-        os.symlink(os.path.join(self.directory, 'pep-0000.html'), 'peps.html')
-
-
 class CPython(HgProvider):
 
-    """Clone of CPython (and requisite tools to build the documentation)."""
+    """Clone of CPython (and requisite tools to build the documentation)"""
 
     url = 'http://hg.python.org/cpython'
     directory = 'cpython'
-    size = (245,   # Includes stuff required to build docs/ docs built
-            325)  # Only docs are built
+    size = 325  # Only docs are built
 
     def create(self):
         """Clone CPython and get the necessary tools to build the
@@ -243,31 +245,49 @@ class CPython(HgProvider):
             subprocess.check_call(['make', 'checkout'])
 
     def build(self):
+        """Build CPython's documentation.
+
+        CPython itself is not built as one will most likely not want to
+        distribute that on a CD. The build_cpython.py script can be used by the
+        Box user for building CPython.
+
+        """
         cmd = 'make' if sys.platform != 'win32' else 'make.bat'
         with change_cwd(os.path.join(self.directory, 'Doc')):
                 subprocess.check_call([cmd, 'html'])
-        # XXX symlink to python_docs.html
+        os.symlink(os.path.join(self.directory, 'Doc', 'html', 'index.html'),
+                   'python_docs.html')
 
 
 if __name__ == '__main__':
-    import argparse  # XXX snag from CPython repo if missing
-
     all_providers = (CPython, Devguide, PEPs, CoveragePy, Mercurial,
-                     Visual_Studio_Express)
-    parser = argparse.ArgumentParser(prog='Python-Dev In a Box')
-    subparsers = parser.add_subparsers() # XXX help
-    parser_create = subparsers.add_parser('create',
-                                          help='Create a %(prog)s')
-    parser_create.add_argument('--build', action='store_true', default=False)
-    group = parser_create.add_mutually_exclusive_group()
-    group.add_argument('--all', dest='providers', action='store_const',
-                       const=all_providers,
-                       help='Provide everything (the default)')
-    group.add_argument('--basic', dest='providers', action='store_const',
-                       const=(CPython, Devguide, PEPs, CoveragePy),
-                       help='Provide the basics people probably are lacking')
-    group.add_argument('--minimum', dest='providers', action='store_const',
-                       const=(CPython, Devguide, PEPs),
-                       help='Provide the bare minimum to be productive')
-    # XXX --build option
-    # XXX parser_update = subparsers.add_parser('update', help='Update the %(prog)s') # XXX also run build
+                     VisualCPPExpress)
+    print(__doc__)
+    print('Please choose what to provide [y/n]:\n')
+    desired_providers = []
+    for provider in all_providers:
+        docstring = provider.__doc__#.replace('\n', ' ')
+        msg = '{} ({} MB built)? '.format(docstring, provider.size)
+        response = input(msg)
+        if response in ('Y', 'y'):
+            desired_providers.append(provider)
+    print()
+    getting = ', '.join(map(operator.attrgetter('__name__'),
+                            desired_providers))
+    print('Getting {}'.format(getting))
+    total_size = sum(map(operator.attrgetter('size'), desired_providers))
+    msg = 'The requested Box will be about {} MB. OK [y/n]? '.format(total_size)
+    response = input(msg)
+    if response not in ('Y', 'y'):
+        sys.exit(0)
+    else:
+        for provider in desired_providers:
+            ins = provider()
+            print('Fetching {} ...'.format(provider.__name__))
+            ins.create()
+            print('Building {} ...'.format(provider.__name__))
+            ins.build()
+    with open('README', 'w') as file:
+        header = 'Python-Dev In a Box: created on {}\n'
+        file.write(header.format(datetime.date.today()))
+    sys.exit(0)
