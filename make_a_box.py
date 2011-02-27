@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Python-Dev In a Box: (almost) everything you need to contribute to (C)Python
-in under 700 MB.
+"""Python-Dev In a Box: everything you need to contribute to Python in under
+700 MB.
 
 This script will clone, checkout, download, or ask you to download everything
 you need to contribute to (C)Python's development short of a C compiler. It
@@ -24,6 +24,15 @@ import urllib.request
 import urllib.parse
 import webbrowser
 import xmlrpc.client
+import run_coverage
+
+
+def rename(new_name):
+    """Decorator to rename an object that defines __name__."""
+    def do_rename(ob):
+        ob.__name__ = new_name
+        return ob
+    return do_rename
 
 
 @contextlib.contextmanager
@@ -73,13 +82,7 @@ class HgProvider(Provider):
 
     def create(self):
         """Clone an Hg repository to 'directory'."""
-        subprocess.check_call(['hg', '-q', 'clone', self.url, self.directory])
-
-    def update(self):
-        """Update the Hg clone in 'directory'."""
-        with change_cwd(self.directory):
-            subprocess.check_call(['hg', '-q', 'pull'])
-            subprocess.check_call(['hg', '-q', 'update'])
+        subprocess.check_call(['hg', 'clone', self.url, self.directory])
 
 
 class SvnProvider(Provider):
@@ -93,14 +96,10 @@ class SvnProvider(Provider):
 
     def create(self):
         """Check out the svn repository to 'directory'."""
-        subprocess.check_call(['svn', 'checkout', '-q',
-                               self.url, self.directory])
-
-    def update(self):
-        """Update the svn checkout in 'directory'."""
-        subprocess.check_call(['svn', 'update', '-q', self.directory])
+        subprocess.check_call(['svn', 'checkout', self.url, self.directory])
 
 
+@rename('Visual C++ Express')
 class VisualCPPExpress(Provider):
 
     """The Web installer for Visual C++ Express"""
@@ -121,9 +120,9 @@ class VisualCPPExpress(Provider):
             pass
         self._prompt('download Visual C++ Express at {} and put in {}'.format(
                         url, self.directory))
-VisualCPPExpress.__name__ = 'Visual C++ Express'
 
 
+@rename('coverage.py')
 class CoveragePy(HgProvider):
 
     """Cloned repository of coverage.py (WARNING: building takes a while)"""
@@ -132,8 +131,13 @@ class CoveragePy(HgProvider):
     directory = 'coveragepy'
     size = 0 # XXX coverage report for CPython
 
-    # XXX build runs coverage tests
-CoveragePy.__name__ = 'coverage.py'
+    def build(self):
+        """Run coverage over CPython."""
+        # XXX build python
+        # XXX run coverage
+        # XXX ``make distclean``
+        # XXX generate html
+        run_coverage.main()
 
 
 class Mercurial(Provider):
@@ -154,8 +158,9 @@ class Mercurial(Provider):
         try:
             return release_data['download_url']
         except KeyError:
-            # XXX
-            pass
+            print('Mercurial has changed how it releases software on PyPI; '
+                  'please report this to bugs.python.org')
+            sys.exit(1)
 
     def _url_filename(self, url):
         """Find the filename from the URL."""
@@ -198,10 +203,9 @@ class PEPs(SvnProvider):
     size = 20
 
     def build(self):
-        """Build the PEPs and symlink PEP 0."""
+        """Build the PEPs."""
         with change_cwd(self.directory):
             subprocess.check_call(['make'])
-        os.symlink(os.path.join(self.directory, 'pep-0000.html'), 'peps.html')
 
 
 class Devguide(HgProvider):
@@ -214,19 +218,19 @@ class Devguide(HgProvider):
     directory = 'devguide'
 
     def build(self):
-        """Build the devguide and symlink its index page."""
+        """Build the devguide using Sphinx from CPython's docs."""
         # Grab Sphinx from cpython/Doc/tools/
         tools_directory = os.path.join(CPython.directory, 'Doc', 'tools')
-        orig_pythonpath = os.environ['PYTHONPATH']
+        orig_pythonpath = os.environ.get('PYTHONPATH')
         os.environ['PYTHONPATH'] = os.path.abspath(tools_directory)
         try:
             with change_cwd(self.directory):
                 subprocess.check_call(['make', 'html'])
         finally:
-            os.environ['PYTHONPATH'] = orig_pythonpath
+            if orig_pythonpath:
+                os.environ['PYTHONPATH'] = orig_pythonpath
         index_path = os.path.join(self.directory, '_build', 'html',
                                   'index.html')
-        os.symlink(index_path, 'devguide.html')
 
 
 class CPython(HgProvider):
@@ -235,13 +239,14 @@ class CPython(HgProvider):
 
     url = 'http://hg.python.org/cpython'
     directory = 'cpython'
-    size = 325  # Only docs are built
+    size = 330  # Only docs are built
 
     def create(self):
         """Clone CPython and get the necessary tools to build the
         documentation."""
         super().create()
         with change_cwd(os.path.join(self.directory, 'Doc')):
+            # XXX Windows?
             subprocess.check_call(['make', 'checkout'])
 
     def build(self):
@@ -255,8 +260,6 @@ class CPython(HgProvider):
         cmd = 'make' if sys.platform != 'win32' else 'make.bat'
         with change_cwd(os.path.join(self.directory, 'Doc')):
                 subprocess.check_call([cmd, 'html'])
-        os.symlink(os.path.join(self.directory, 'Doc', 'html', 'index.html'),
-                   'python_docs.html')
 
 
 if __name__ == '__main__':
@@ -276,7 +279,7 @@ if __name__ == '__main__':
                             desired_providers))
     print('Getting {}'.format(getting))
     total_size = sum(map(operator.attrgetter('size'), desired_providers))
-    msg = 'The requested Box will be about {} MB. OK [y/n]? '.format(total_size)
+    msg = 'The requested Box will be about {} MB. OK? [y/n] '.format(total_size)
     response = input(msg)
     if response not in ('Y', 'y'):
         sys.exit(0)
