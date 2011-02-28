@@ -133,6 +133,7 @@ class CoveragePy(HgProvider):
     size = 133  # Includes the coverage report
     docs = os.path.join('coverage_report', 'index.html')
 
+    # XXX still requires __main__.py in coveragepy checkout
     def build(self):
         """Run coverage over CPython."""
         # Build Python
