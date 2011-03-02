@@ -18,6 +18,7 @@ from distutils.version import LooseVersion as Version
 import operator
 import os
 import os.path
+import shutil
 import subprocess
 import sys
 import urllib.request
@@ -150,7 +151,7 @@ class CoveragePy(HgProvider):
                                    regrtest_path])
         finally:
             # Clean up from the test run
-            os.rmdir('build')
+            shutil.rmtree('build')
         # Generate the HTML report
         print('Generating report ...')
         subprocess.call([executable, 'coveragepy', 'html', '-i', '--omit',

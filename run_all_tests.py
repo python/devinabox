@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Run CPython's test suite in the most rigorous way possible."""
 import multiprocessing
+import shutil
 import subprocess
 import sys
 import build_cpython
@@ -16,7 +17,7 @@ def main():
                          '-w', '-u', 'all', '-j',
                          str(multiprocessing.cpu_count())])
     finally:
-        os.rmdir('build')
+        shutil.rmtree('build')
 
 
 if __name__ == '__main__':
