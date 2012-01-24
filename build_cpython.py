@@ -36,7 +36,7 @@ def main():
         if os.path.isfile('Makefile'):
             print('Makefile already exists; skipping ./configure')
         else:
-            subprocess.check_call(['./configure', '--prefix=/dev/null',
+            subprocess.check_call(['./configure', '--prefix=/tmp/cpython',
                                    '--with-pydebug'])
         make_cmd = ['make', '-s', '-j', str(multiprocessing.cpu_count())]
         subprocess.call(make_cmd)
