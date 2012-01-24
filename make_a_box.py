@@ -247,18 +247,20 @@ class Devguide(HgProvider):
         """Build the devguide using Sphinx from CPython's docs."""
         # Grab Sphinx from cpython/Doc/tools/
         tools_directory = os.path.join('cpython', 'Doc', 'tools')
-        sphinx_build_path = os.path.abspath(os.path.join(tools_directory, 'sphinx-build.py'))
+        sphinx_build_path = os.path.join(tools_directory, 'sphinx-build.py')
+        sphinx_build_path = os.path.abspath(sphinx_build_path)
         orig_pythonpath = os.environ.get('PYTHONPATH')
         os.environ['PYTHONPATH'] = os.path.abspath(tools_directory)
-        sphinxbuild_env = "SPHINXBUILD='python {}'".format(sphinx_build_path)
+        orig_sphinxbuild = os.environ.get('SPHINXBUILD')
+        os.environ['SPHINXBUILD'] = 'python {}'.format(sphinx_build_path)
         try:
             with change_cwd(self.directory):
-                subprocess.check_call(' '.join(['make', 'html',
-                    sphinxbuild_env]),
-                                      shell=True)
+                subprocess.check_call(['make', 'html'])
         finally:
             if orig_pythonpath:
                 os.environ['PYTHONPATH'] = orig_pythonpath
+            if orig_sphinxbuild:
+                os.environ['SPHINXBUILD'] = orig_sphinxbuild
         index_path = os.path.join(self.directory, '_build', 'html',
                                   'index.html')
 
