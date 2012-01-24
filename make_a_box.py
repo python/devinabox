@@ -82,9 +82,14 @@ class HgProvider(Provider):
         """Location of the repository."""
         raise NotImplementedError
 
+    @property
+    def directory(self):
+        return os.path.basename(self.url)
+
     def create(self):
         """Clone an Hg repository to 'directory'."""
-        subprocess.check_call(['hg', 'clone', self.url, self.directory])
+        cmd = ['hg', 'clone', self.url]
+        subprocess.check_call(cmd)
 
 
 class SvnProvider(Provider):
@@ -130,7 +135,6 @@ class CoveragePy(HgProvider):
     """Clone of coverage.py (WARNING: building takes a while)"""
 
     url = 'https://brettsky@bitbucket.org/ned/coveragepy'
-    directory = 'coveragepy'
     size = 133  # Includes the coverage report
     docs = os.path.join('coverage_report', 'index.html')
 
@@ -144,7 +148,7 @@ class CoveragePy(HgProvider):
             print('No CPython executable found')
             sys.exit(1)
         print('Running coverage ...')
-        regrtest_path = os.path.join(CPython.directory, 'Lib', 'test',
+        regrtest_path = os.path.join('cpython', 'Lib', 'test',
                                     'regrtest.py')
         try:
             subprocess.check_call([executable, self.directory, 'run', '--pylib',
@@ -158,7 +162,7 @@ class CoveragePy(HgProvider):
                          '"*/test/*,*/tests/*"', '-d', 'coverage_report'])
         # ``make distclean`` as you don't want to distribute your own build
         print('Cleaning up the CPython build ...')
-        with change_cwd(CPython.directory):
+        with change_cwd('cpython'):
             subprocess.check_call(['make', 'distclean'])
 
 
@@ -216,14 +220,13 @@ class Mercurial(Provider):
         self._create_tortoisehg()
 
 
-class PEPs(SvnProvider):
+class PEPs(HgProvider):
 
     """Checkout of the Python Enhancement Proposals (for PEPs 7 & 8)"""
 
-    url = 'http://svn.python.org/projects/peps/trunk/'
-    directory = 'peps'
+    url = 'http://hg.python.org/peps'
     size = 20
-    docs = os.path.join(directory, 'pep-0000.html')
+    docs = os.path.join('peps', 'pep-0000.html')
 
     def build(self):
         """Build the PEPs."""
@@ -238,18 +241,21 @@ class Devguide(HgProvider):
     size = 4
 
     url = 'http://hg.python.org/devguide'
-    directory = 'devguide'
-    docs = os.path.join(directory, '_build', 'html', 'index.html')
+    docs = os.path.join('devguide', '_build', 'html', 'index.html')
 
     def build(self):
         """Build the devguide using Sphinx from CPython's docs."""
         # Grab Sphinx from cpython/Doc/tools/
-        tools_directory = os.path.join(CPython.directory, 'Doc', 'tools')
+        tools_directory = os.path.join('cpython', 'Doc', 'tools')
+        sphinx_build_path = os.path.abspath(os.path.join(tools_directory, 'sphinx-build.py'))
         orig_pythonpath = os.environ.get('PYTHONPATH')
         os.environ['PYTHONPATH'] = os.path.abspath(tools_directory)
+        sphinxbuild_env = "SPHINXBUILD='python {}'".format(sphinx_build_path)
         try:
             with change_cwd(self.directory):
-                subprocess.check_call(['make', 'html'])
+                subprocess.check_call(' '.join(['make', 'html',
+                    sphinxbuild_env]),
+                                      shell=True)
         finally:
             if orig_pythonpath:
                 os.environ['PYTHONPATH'] = orig_pythonpath
@@ -262,9 +268,8 @@ class CPython(HgProvider):
     """Clone of CPython (and requisite tools to build the documentation)"""
 
     url = 'http://hg.python.org/cpython'
-    directory = 'cpython'
     size = 330  # Only docs are built
-    docs = os.path.join(directory, 'Doc', 'build', 'html', 'index.html')
+    docs = os.path.join('cpython', 'Doc', 'build', 'html', 'index.html')
 
     def create(self):
         """Clone CPython and get the necessary tools to build the
@@ -291,7 +296,7 @@ if __name__ == '__main__':
     all_providers = (CPython, Devguide, PEPs, CoveragePy, Mercurial,
                      VisualCPPExpress)
     print(__doc__)
-    print('Please choose what to provide [y/n]:\n')
+    print('Please choose what to provide [answer y/n]:\n')
     desired_providers = []
     for provider in all_providers:
         docstring = provider.__doc__#.replace('\n', ' ')
