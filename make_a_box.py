@@ -88,22 +88,11 @@ class HgProvider(Provider):
 
     def create(self):
         """Clone an Hg repository to 'directory'."""
-        cmd = ['hg', 'clone', self.url]
-        subprocess.check_call(cmd)
-
-
-class SvnProvider(Provider):
-
-    """Provide an svn checkout."""
-
-    @abc.abstractproperty
-    def url(self):
-        """Location of the repository."""
-        raise NotImplementedError
-
-    def create(self):
-        """Check out the svn repository to 'directory'."""
-        subprocess.check_call(['svn', 'checkout', self.url, self.directory])
+        if os.path.exists(self.directory):
+            subprocess.check_call(['hg', 'pull', '-u', self.url],
+                                  cwd = self.directory)
+        else:
+            subprocess.check_call(['hg', 'clone', self.url, self.directory])
 
 
 @rename('Visual C++ Express')
@@ -134,7 +123,7 @@ class CoveragePy(HgProvider):
 
     """Clone of coverage.py (WARNING: building takes a while)"""
 
-    url = 'https://brettsky@bitbucket.org/ned/coveragepy'
+    url = 'https://bitbucket.org/ned/coveragepy'
     size = 133  # Includes the coverage report
     docs = os.path.join('coverage_report', 'index.html')
 
@@ -181,12 +170,14 @@ class Mercurial(Provider):
         latest_release = hg_versions[-1]
         # Mercurial keeps releases on their servers
         release_data = pypi.release_data('Mercurial', latest_release)
+        fname = "mercurial-%s.tar.gz" % latest_release
         try:
-            return release_data['download_url']
+            release_url = release_data['download_url']
         except KeyError:
             print('Mercurial has changed how it releases software on PyPI; '
                   'please report this to bugs.python.org')
             sys.exit(1)
+        return os.path.join(release_url, fname)
 
     def _url_filename(self, url):
         """Find the filename from the URL."""
