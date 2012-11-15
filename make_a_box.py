@@ -84,13 +84,13 @@ class HgProvider(Provider):
 
     @property
     def directory(self):
-        return os.path.basename(self.url)
+        return os.path.abspath(os.path.basename(self.url))
 
     def create(self):
         """Clone an Hg repository to 'directory'."""
         if os.path.exists(self.directory):
             subprocess.check_call(['hg', 'pull', '-u', self.url],
-                                  cwd = self.directory)
+                                  cwd=self.directory)
         else:
             subprocess.check_call(['hg', 'clone', self.url, self.directory])
 
@@ -127,32 +127,63 @@ class CoveragePy(HgProvider):
     size = 133  # Includes the coverage report
     docs = os.path.join('coverage_report', 'index.html')
 
-    # XXX still requires __main__.py in coveragepy checkout
-    def build(self):
-        """Run coverage over CPython."""
-        # Build Python
-        executable = build_cpython.main()
-        # Run coverage
-        if not executable:
+    @contextlib.contextmanager
+    def build_cpython(self):
+        self.executable = build_cpython.main()
+        if not self.executable:
             print('No CPython executable found')
             sys.exit(1)
-        print('Running coverage ...')
-        regrtest_path = os.path.join('cpython', 'Lib', 'test',
-                                    'regrtest.py')
-        try:
-            subprocess.check_call([executable, self.directory, 'run', '--pylib',
-                                   regrtest_path])
-        finally:
-            # Clean up from the test run
-            shutil.rmtree('build')
-        # Generate the HTML report
-        print('Generating report ...')
-        subprocess.call([executable, 'coveragepy', 'html', '-i', '--omit',
-                         '"*/test/*,*/tests/*"', '-d', 'coverage_report'])
-        # ``make distclean`` as you don't want to distribute your own build
+        self.cpython_dir = os.path.dirname(self.executable)
+        yield
         print('Cleaning up the CPython build ...')
-        with change_cwd('cpython'):
-            subprocess.check_call(['make', 'distclean'])
+        subprocess.check_call(['make', 'distclean'])
+
+    @contextlib.contextmanager
+    def build_coveragepy(self):
+        env = os.environ.copy()
+        env['CPPPATH'] = '-I {} -I {}'.format(self.cpython_dir,
+                                     os.path.join(self.cpython_dir, 'Include'))
+        with change_cwd(self.coveragepy_dir):
+            print('Compiling coverage.py extension(s) ...')
+            cmd = [self.executable, 'setup.py', 'build_ext', '--inplace']
+            subprocess.check_call(cmd, env=env)
+            yield
+            # XXX clean up tracer.so; distribute?
+
+    def generate_coveragepy_command(self, command, *args):
+        return [self.executable, self.coveragepy_dir, command,
+                '--include', os.path.join(self.cpython_dir, 'Lib', '*'),
+                '--omit', '"Lib/test/*,Lib/*/tests/*"'] + list(args)
+
+    @contextlib.contextmanager
+    def run_coveragepy(self):
+        print('Running coverage ...')
+        regrtest_path = os.path.join(self.cpython_dir, 'Lib', 'test',
+                                     'regrtest.py')
+        fullcoverage = os.path.join(self.coveragepy_dir, 'coverage',
+                                    'fullcoverage')
+        env = os.environ.copy()
+        env['PYTHONPATH'] = fullcoverage
+        cmd = self.generate_coveragepy_command('run', '--pylib', regrtest_path,
+                                               'test_imp')
+        subprocess.check_call(cmd, env=env)
+        yield
+        os.unlink('.coverage')
+
+    def report_coveragepy(self):
+        print('Generating report ...')
+        cmd = self.generate_coveragepy_command('html', '-i', '-d',
+                                os.path.join(self.root_dir, 'coverage_report'))
+        subprocess.check_call(cmd)
+
+    def build(self):
+        """Run coverage over CPython."""
+        self.coveragepy_dir = self.directory
+        self.root_dir = os.path.dirname(self.directory)
+        with self.build_cpython(), self.build_coveragepy():
+            with change_cwd(self.cpython_dir):
+                with self.run_coveragepy():
+                    self.report_coveragepy()
 
 
 class Mercurial(Provider):
