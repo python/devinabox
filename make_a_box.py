@@ -144,11 +144,14 @@ class CoveragePy(HgProvider):
         env['CPPPATH'] = '-I {} -I {}'.format(self.cpython_dir,
                                      os.path.join(self.cpython_dir, 'Include'))
         with change_cwd(self.coveragepy_dir):
+            # Don't want to use venv because we want the file paths to match
+            # up with the repo and not installation locations.
             print('Compiling coverage.py extension(s) ...')
             cmd = [self.executable, 'setup.py', 'build_ext', '--inplace']
             subprocess.check_call(cmd, env=env)
             yield
-            # XXX clean up tracer.so; distribute?
+            # XXX clean up tracer.so and any other build directories;
+            #     leave distribute for those that want to build themselves
 
     def generate_coveragepy_command(self, command, *args):
         exclude = '{},{}'.format(os.path.join('Lib', 'test', '*'),
