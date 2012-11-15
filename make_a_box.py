@@ -151,9 +151,11 @@ class CoveragePy(HgProvider):
             # XXX clean up tracer.so; distribute?
 
     def generate_coveragepy_command(self, command, *args):
+        exclude = '{},{}'.format(os.path.join('Lib', 'test', '*'),
+                                 os.path.join('Lib', '*', 'tests', '*'))
         return [self.executable, self.coveragepy_dir, command,
                 '--include', os.path.join(self.cpython_dir, 'Lib', '*'),
-                '--omit', '"Lib/test/*,Lib/*/tests/*"'] + list(args)
+                '--omit', exclude] + list(args)
 
     @contextlib.contextmanager
     def run_coveragepy(self):
@@ -164,8 +166,7 @@ class CoveragePy(HgProvider):
                                     'fullcoverage')
         env = os.environ.copy()
         env['PYTHONPATH'] = fullcoverage
-        cmd = self.generate_coveragepy_command('run', '--pylib', regrtest_path,
-                                               'test_imp')
+        cmd = self.generate_coveragepy_command('run', '--pylib', regrtest_path)
         subprocess.check_call(cmd, env=env)
         yield
         os.unlink('.coverage')
