@@ -136,12 +136,13 @@ class CoveragePy(HgProvider):
         self.cpython_dir = os.path.dirname(self.executable)
         yield
         print('Cleaning up the CPython build ...')
-        subprocess.check_call(['make', 'distclean'])
+        with change_cwd(self.cpython_dir):
+            subprocess.check_call(['make', 'distclean'])
 
     @contextlib.contextmanager
     def build_coveragepy(self):
         env = os.environ.copy()
-        env['CPPPATH'] = '-I {} -I {}'.format(self.cpython_dir,
+        env['CPPFLAGS'] = '-I {} -I {}'.format(self.cpython_dir,
                                      os.path.join(self.cpython_dir, 'Include'))
         with change_cwd(self.coveragepy_dir):
             # Don't want to use venv because we want the file paths to match
@@ -150,8 +151,9 @@ class CoveragePy(HgProvider):
             cmd = [self.executable, 'setup.py', 'build_ext', '--inplace']
             subprocess.check_call(cmd, env=env)
             yield
-            # XXX clean up tracer.so and any other build directories;
-            #     leave distribute for those that want to build themselves
+            print('Cleaning up coverage.py build ...')
+            shutil.rmtree('build')
+            os.unlink(os.path.join('coverage', 'tracer.so'))
 
     def generate_coveragepy_command(self, command, *args):
         exclude = '{},{}'.format(os.path.join('Lib', 'test', '*'),
@@ -304,7 +306,6 @@ class CPython(HgProvider):
         documentation."""
         super().create()
         with change_cwd(os.path.join(self.directory, 'Doc')):
-            # XXX Windows?
             subprocess.check_call(['make', 'checkout'])
 
     def build(self):
@@ -321,6 +322,7 @@ class CPython(HgProvider):
 
 
 if __name__ == '__main__':
+    # XXX CLI: create, build, list
     all_providers = (CPython, Devguide, PEPs, CoveragePy, Mercurial,
                      VisualCPPExpress)
     print(__doc__)
