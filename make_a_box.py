@@ -2,13 +2,13 @@
 """Python-Dev In a Box: everything you need to contribute to Python in under
 700 MB.
 
-This script will clone, checkout, download, or ask you to download everything
-you need to contribute to (C)Python's development short of a C compiler. It
-will also "build" everything so that users do not need to do **everything**
-from scratch. This also allows for easy offline use.
+This script will clone, checkout, or (ask you to) download almost everything
+you need to contribute to (C)Python's development. It will also "build"
+everything so that users do not need to do **everything** from scratch. This
+also allows for easy offline use.
 
-There are also some scripts provided along side this one to help in executing
-common tasks.
+Beyond this script itself, there are other scripts provided along side this one
+to help in executing common tasks.
 
 """
 import abc
