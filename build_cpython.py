@@ -1,5 +1,9 @@
 #!/usr/bin/env python
-"""Build CPython"""
+"""Build CPython on UNIX.
+
+On all platforms, return the path to the executable.
+
+"""
 import multiprocessing
 import os
 import subprocess
@@ -45,6 +49,6 @@ def main():
     return executable()
 
 if __name__ == '__main__':
-    if not main():
-        print('No executable found')
-        sys.exit(1)
+    executable = main()
+    print(executable or 'No executable found')
+    sys.exit(0 if executable else 1)

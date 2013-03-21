@@ -1,0 +1,158 @@
+devinabox -- Bootstrapping a Python core dev sprint
+/////////////////////////////////////////////////////////
+
+The devinabox project is meant to help a CPython core developer produce a
+directory which contains everything necessary to enable someone at a sprint
+(regardless of OS) to get set up quickly. This README is **NOT** meant for a new
+contributor! If you *are* a new contributor, ask the core developer leading your
+sprint about how to get started.
+
+This README outlines two things: what to download to create a devinabox and what
+is provided to help new contributors.
+
+
+Stuff to download
+=================
+
+The following sections outline various files to download and repositories to
+clone into your devinabox. Make sure to **NOT** change the directories that
+repositories are cloned into. The default names are assumed by the other files
+in the devinabox.
+
+When you are done you should have in this directory everything
+someone needs to contribute. Simply copy the whole directory to some sort of
+media (USB 3 thumb drive and CD tend to work well) and then pass it around for
+people to copy somewhere on to their system. They can run ``hg pull -u`` to
+get updates, sparing the probably taxed internet connection at the sprint from
+doing complete repository cloning.
+
+
+Mercurial
+---------
+
+You will want to download the latest release of Mercurial
+(http://pypi.python.org/pypi/Mercurial) and TortoiseHg for Windows users
+(http://tortoisehg.bitbucket.org/download/). OS X users can be told that
+Mercurial is available through Homebrew if they prefer
+(XXX; if they use MacPorts or any other package manager then tell them they
+should switch to Homebrew at home as it handles Python the best and to use the
+download of Mercurial you have provided to save time).
+
+Providing Mercurial guarantees there is no issue with new contributors trying to
+update repositories or generating patches.
+
+
+A Compiler
+-----------
+
+Since you will most likely be dealing with developers this section is probably
+not important, but just in case you get questions about compilers, here are some
+suggestions.
+
+OS X users should be told to download XCode from the Apple App Store **ahead of
+time**. It's on the order of a couple GiB in size, so you don't want to have
+people downloading it at the sprint.
+
+If new contributors think they may be doing C development, suggest LLVM + clang
+for better error reporting than gcc. OS X users can get an up-to-date version
+of the toolchain through Homebrew.
+
+For Windows users, tell them to download and install Visual C++ Express
+(http://www.microsoft.com/express/Downloads/) **ahead of time**.
+
+
+CPython
+-------
+
+Clone the CPython repository and build it (you will be cleaning up your build
+later, though as a final step).
+
+Also make sure to build the documentation. This not only alleviates the need for
+everyone to build it from scratch, but it will also pull in copies of projects
+that users can rely on, if necessary, to build other documentation
+(e.g. everything needed to build the devguide). If the documentation starts
+being built by a repository build of CPython (and thus Python 3) this may no
+longer hold true.
+
+
+PEPs
+----
+
+Clone the repository and build it. That way if people need to reference a PEP
+they can easily find itand will be able to use the easier-to-read HTML version.
+
+No specific guidelines for building the PEPs are provided for new contributors
+since there is only a slim chance they will be editing a PEP, and if they are
+then they should be able to figure out how to get the PEPs to build on their
+own.
+
+
+Devguide
+--------
+
+Clone the repository and build it. This gives people a local copy to use
+rather than having to use the (probably slow) internet connection at the sprint.
+
+If a new contributor needs to be able to build the devguide, they should only
+need to set their ``PYTHONPATH`` to point at the ``cpython/Doc/tools`` directory
+in the CPython repository thanks to the requisite projects being pulled in when
+you built the CPython documentation.
+
+
+Coverage.py
+-----------
+
+01. Build the CPython repository
+02. Clone the repository from https://bitbucket.org/ned/coveragepy
+03. Download Distribute from https://pypi.python.org/pypi/distribute
+04. Unpack and build Distribute with Python 3 in the coveragepy repository
+05. Symlink the ``distribute-N.N.N/build/lib/setuptools`` directory into
+   ``coveragepy``
+06. Symlink ``distribute-N.N.N/build/lib/pkg_resources.py`` into ``coveragepy``
+07. Run ``./cpython/python full_coverage.py build``
+08. Run ``./cpython/python full_coverage.py run``
+09. Run ``./cpython/python full_coverage.py html original_coverage_report``
+10. ``make distclean`` the CPython repository
+
+
+All these steps will generate a complete coverage report for the standard
+library and put it in the ``original_coverage_report`` directory. Do note that
+the  location is **not** the default one for the script to prevent users from
+accidentally overwriting the original copy (and thus needing to run the whole
+coverage again from scratch).
+
+Do be aware that this step takes a few **hours**.
+
+
+Included files to help out
+==========================
+
+A couple of files are included in order to make things a little bit easier for
+both you and the new contributors.
+
+
+``full_coverage.py``
+---------------------
+
+As discussed earlier, this generates the coverage report for the standard
+library in the most thorough way possible. The ``run`` option can take specific
+tests as an argument. The ``html`` directory can take an argument for a
+directory to write to, but the default should not conflict with the original
+coverage run you did earlier (if you followed the directions =) .
+
+
+``build_cpython.py``
+--------------------
+On UNIX-based OSs, builds the CPython repository, and on all platforms it
+verifies that the expected CPython binary exists.
+
+While the devguide includes instructions on how to build under UNIX, the script
+just simplifies this by having a single command subsume both the configure and
+build steps. It also uses reasonable defaults (e.g. all cores on the CPU).
+
+
+``index.html``
+--------------
+
+An HTML file with links to the various pieces of documentation you built
+previously and the helper scripts.
