@@ -5,6 +5,8 @@ coveragepy
 cpython
 devguide
 peps
+# Unversioned downloads
+Visual C++ Express/vc_web.exe
 # Generated
 coverage_report
 original_coverage_report

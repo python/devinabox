@@ -26,6 +26,10 @@ people to copy somewhere on to their system. They can run ``hg pull -u`` to
 get updates, sparing the probably taxed internet connection at the sprint from
 doing complete repository cloning.
 
+If recreating from an old checkout ``hg purge --all`` in the individual
+clones is a handy way to ensure old build artifacts have been removed.
+You will need to enable the purge extension in ``~/.hgrc``.
+
 
 Mercurial
 ---------
@@ -104,15 +108,16 @@ Coverage.py
 
 01. Build the CPython repository
 02. Clone the repository from https://bitbucket.org/ned/coveragepy
-03. Download Distribute from https://pypi.python.org/pypi/distribute
-04. Unpack and build Distribute with Python 3 in the coveragepy repository
-05. Symlink the ``distribute-N.N.N/build/lib/setuptools`` directory into
-   ``coveragepy``
-06. Symlink ``distribute-N.N.N/build/lib/pkg_resources.py`` into ``coveragepy``
+03. Clone setuptools from https://bitbucket.org/pypa/setuptools/
+04. Run ``python3 setup.py build`` in the ``setuptools`` directory
+05. Run ``ln -s ../setuptools/build/lib/setuptools`` in the ``coveragepy``
+    directory
+06. Run ``ln -s ../setuptools/build/lib/pkg_resources.py`` in the
+    ``coveragepy`` directory
 07. Run ``./cpython/python full_coverage.py build``
 08. Run ``./cpython/python full_coverage.py run``
 09. Run ``./cpython/python full_coverage.py html original_coverage_report``
-10. ``make distclean`` the CPython repository
+10. Run ``hg purge --all`` in the CPython repository
 
 
 All these steps will generate a complete coverage report for the standard
@@ -149,6 +154,9 @@ verifies that the expected CPython binary exists.
 While the devguide includes instructions on how to build under UNIX, the script
 just simplifies this by having a single command subsume both the configure and
 build steps. It also uses reasonable defaults (e.g. all cores on the CPU).
+
+(You may need to cd into the CPython directory and run ``make`` to get the
+extension modules to build)
 
 
 ``index.html``

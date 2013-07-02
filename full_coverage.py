@@ -29,6 +29,13 @@ def chdir(directory):
     yield
     os.chdir(original_directory)
 
+def make_setup_cmd(*args):
+    # Silence a spurious warning from setuptools
+    # See https://bitbucket.org/pypa/setuptools/issue/29/
+    cmd = [sys.executable, '-W', 'ignore::UserWarning:distutils.dist',
+           'setup.py']
+    cmd.extend(args)
+    return cmd
 
 def build(args):
     """Build coverage.py's C-based tracer.
@@ -43,11 +50,11 @@ def build(args):
                 os.unlink(tracer_path)
             except FileNotFoundError:
                 pass
-        subprocess.check_call([sys.executable, 'setup.py', 'clean'])
+        subprocess.check_call(make_setup_cmd('clean'))
         env = os.environ.copy()
         env['CPPFLAGS'] = '-I {} -I {}'.format(CPYTHON,
                                                os.path.join(CPYTHON, 'Include'))
-        command = [sys.executable, 'setup.py', 'build_ext', '--inplace']
+        command = make_setup_cmd('build_ext', '--inplace')
         process = subprocess.Popen(command, env=env)
         process.wait()
 
