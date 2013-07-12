@@ -6,10 +6,14 @@ On all platforms, return the path to the executable.
 """
 from __future__ import print_function
 
-import multiprocessing
 import os
 import subprocess
 import sys
+
+try:
+    from os import cpu_count
+except ImportError:
+    from multiprocessing import cpu_count
 
 
 def executable(directory):
@@ -42,7 +46,7 @@ def main(directory):
         else:
             subprocess.check_call(['./configure', '--prefix=/tmp/cpython',
                                    '--with-pydebug'])
-        make_cmd = ['make', '-s', '-j', str(multiprocessing.cpu_count())]
+        make_cmd = ['make', '-s', '-j', str(cpu_count())]
         subprocess.call(make_cmd)
     finally:
         os.chdir(cwd)
