@@ -4,14 +4,15 @@
 On all platforms, return the path to the executable.
 
 """
+from __future__ import print_function
+
 import multiprocessing
 import os
 import subprocess
 import sys
 
 
-def executable():
-    directory = 'cpython'
+def executable(directory):
     cmd = os.path.join(directory, 'python')
     # UNIX
     if not os.path.isfile(cmd):
@@ -28,12 +29,11 @@ def executable():
     return os.path.abspath(cmd)
 
 
-def main():
+def main(directory):
     if sys.platform == 'win32':
         print("See the devguide's Getting Set Up guide for building under "
               "Windows")
 
-    directory = 'cpython'
     cwd = os.getcwd()
     os.chdir(directory)
     try:
@@ -46,9 +46,17 @@ def main():
         subprocess.call(make_cmd)
     finally:
         os.chdir(cwd)
-    return executable()
+    return executable(directory)
 
 if __name__ == '__main__':
-    executable = main()
-    print(executable or 'No executable found')
+    arg_count = len(sys.argv) - 1
+    if arg_count > 1:
+        raise ValueError(
+                '0 or 1 arguments expected, not {}'.format(arg_count))
+    executable = main(sys.argv[1] if arg_count else 'cpython')
+    if not executable:
+        print('CPython executable NOT found')
+    else:
+        print('CPython executable can be found at:')
+        print(' ', executable)
     sys.exit(0 if executable else 1)
