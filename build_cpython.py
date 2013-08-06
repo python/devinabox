@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# Source is Python 2/3 compatible.
 """Build CPython on UNIX.
 
 On all platforms, return the path to the executable.
