@@ -21,7 +21,7 @@ in the devinabox.
 
 When you are done you should have in this directory everything
 someone needs to contribute. Simply copy the whole directory to some sort of
-media (USB 3 thumb drive and CD tend to work well) and then pass it around for
+media (USB 3 drive and a CD tend to work well) and then pass it around for
 people to copy somewhere on to their system. They can run ``hg pull -u`` to
 get updates, sparing the probably taxed internet connection at the sprint from
 doing complete repository cloning.
@@ -29,6 +29,11 @@ doing complete repository cloning.
 If recreating from an old checkout ``hg purge --all`` in the individual
 clones is a handy way to ensure old build artifacts have been removed.
 You will need to enable the purge extension in ``~/.hgrc``.
+
+Also make sure to not simply copy your own repositories to the box! Otherwise
+the clones will most likely have paths which use SSH and the hg account on
+hg.python.org which only core developers can use. It's just easier to make the
+clones from scratch.
 
 
 Mercurial
@@ -68,7 +73,7 @@ For Windows users, tell them to download and install Visual C++ Express
 CPython
 -------
 
-Clone the CPython repository and build it (you will be cleaning up your build
+Clone the `CPython repository`_ and build it (you will be cleaning up your build
 later, though as a final step).
 
 Also make sure to build the documentation. This not only alleviates the need for
@@ -78,55 +83,68 @@ that users can rely on, if necessary, to build other documentation
 being built by a repository build of CPython (and thus Python 3) this may no
 longer hold true.
 
+.. _CPython repository: http://hg.python.org/cpython
+
 
 PEPs
 ----
 
-Clone the repository and build it. That way if people need to reference a PEP
-they can easily find itand will be able to use the easier-to-read HTML version.
+Clone the `PEP repository`_ and build it. That way if people need to reference a
+PEP they can easily find itand will be able to use the easier-to-read HTML
+version.
 
 No specific guidelines for building the PEPs are provided for new contributors
 since there is only a slim chance they will be editing a PEP, and if they are
 then they should be able to figure out how to get the PEPs to build on their
 own.
 
+.. _PEP repository: http://hg.python.org/peps
+
 
 Devguide
 --------
 
-Clone the repository and build it. This gives people a local copy to use
-rather than having to use the (probably slow) internet connection at the sprint.
+Clone the `devguide repository`_ and build it. This gives people a local copy to
+use rather than having to use the (probably slow) internet connection at the
+sprint.
 
 If a new contributor needs to be able to build the devguide, they should only
 need to set their ``PYTHONPATH`` to point at the ``cpython/Doc/tools`` directory
 in the CPython repository thanks to the requisite projects being pulled in when
 you built the CPython documentation.
 
+.. _devguide repository: http://hg.python.org/devguide
+
 
 Coverage.py
 -----------
 
-01. Build the CPython repository
-02. Clone the repository from https://bitbucket.org/ned/coveragepy
-03. Clone setuptools from https://bitbucket.org/pypa/setuptools/
-04. Run ``python3 setup.py build`` in the ``setuptools`` directory
-05. Run ``ln -s ../setuptools/build/lib/setuptools`` in the ``coveragepy``
-    directory
-06. Run ``ln -s ../setuptools/build/lib/pkg_resources.py`` in the
-    ``coveragepy`` directory
-07. Run ``./cpython/python full_coverage.py build``
-08. Run ``./cpython/python full_coverage.py run``
-09. Run ``./cpython/python full_coverage.py html original_coverage_report``
-10. Run ``hg purge --all`` in the CPython repository
+#. Download setuptools_
+#. Download coverage_
+#. Build CPython: ``./build_cpython.py``
+#. Create an venv: ``./cpython/python.exe -m venv venv``
+#. Extract setuptools and coverage: ``tar -x -f setuptools-*.tar.gz; tar -x -f coverage-*.tar.gz``
+#. Install setuptools in the venv: ``../venv/bin/python3 setup.py install``
+#. Install coverage in the venv
+#. Set PYTHONPATH to ``fullcoverage`` (will need to change the directory): ``export PYTHONPATH=../coverage-N.N/coverage/fullcoverage``
+#. Run coverage from the venv: ``./bin/python -m coverage run --pylib -m test``
+#. Unset PYTHONPATH: ``unset PYTHONPATH``
+#. Generate coverage report: ``./bin/python -m coverage html --directory=../coverage_report -i --include="../cpython/Lib/*" --title="CPython test coverage report"``
+#. Delete project directories (but not tar files!) for coverage and setuptools
+#. Delete venv
+#. Clean up the cpython clone: either ``make distclean`` or check it out again
 
+Do be aware that this step takes a few **hours**. If you find report generation
+is the bottleneck (typically because of memory pressure), you can generate the
+HTML reports in chunks at the cost of not having a comprehensive index. E.g. to
+report for every module/package starting with the letter 'a'::
 
-All these steps will generate a complete coverage report for the standard
-library and put it in the ``original_coverage_report`` directory. Do note that
-the  location is **not** the default one for the script to prevent users from
-accidentally overwriting the original copy (and thus needing to run the whole
-coverage again from scratch).
+  ./bin/python3 -m coverage html --directory ../coverage_report -i ../cpython/Lib/a*.py ../cpython/Lib/a*/*.py ../cpython/Lib/a*/*/*.py
 
-Do be aware that this step takes a few **hours**.
+You can then create an index using the textual report from coverage.py.
+
+.. _setuptools: https://pypi.python.org/pypi/setuptools
+.. _coverage: https://pypi.python.org/pypi/coverage
 
 
 Included files to help out
@@ -134,6 +152,23 @@ Included files to help out
 
 A couple of files are included in order to make things a little bit easier for
 both you and the new contributors.
+
+
+``index.html``
+--------------
+
+An HTML file with links to the various pieces of documentation you built
+previously and the helper scripts.
+
+
+``build_cpython.py``
+--------------------
+On UNIX-based OSs it builds the CPython repository. On all platforms it
+verifies that the expected CPython binary exists.
+
+While the devguide includes instructions on how to build under UNIX, the script
+just simplifies this by having a single command subsume both the configure and
+build steps. It also uses reasonable defaults (e.g. all cores on the CPU).
 
 
 ``full_coverage.py``
@@ -144,23 +179,3 @@ library in the most thorough way possible. The ``run`` option can take specific
 tests as an argument. The ``html`` directory can take an argument for a
 directory to write to, but the default should not conflict with the original
 coverage run you did earlier (if you followed the directions =) .
-
-
-``build_cpython.py``
---------------------
-On UNIX-based OSs, builds the CPython repository, and on all platforms it
-verifies that the expected CPython binary exists.
-
-While the devguide includes instructions on how to build under UNIX, the script
-just simplifies this by having a single command subsume both the configure and
-build steps. It also uses reasonable defaults (e.g. all cores on the CPU).
-
-(You may need to cd into the CPython directory and run ``make`` to get the
-extension modules to build)
-
-
-``index.html``
---------------
-
-An HTML file with links to the various pieces of documentation you built
-previously and the helper scripts.
