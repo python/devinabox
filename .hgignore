@@ -5,10 +5,16 @@ coveragepy
 cpython
 devguide
 peps
-# Unversioned downloads
-Visual C++ Express/vc_web.exe
+
+# Downloads
+coverage-*
+mercurial-*
+setuptools-*
+tortoisehg-*
+
 # Generated
 coverage_report
-original_coverage_report
+venv
+
 # Misc
 __pycache__
