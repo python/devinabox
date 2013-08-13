@@ -126,7 +126,7 @@ Coverage.py
 #. Extract setuptools and coverage: ``tar -x -f setuptools-*.tar.gz; tar -x -f coverage-*.tar.gz``
 #. Install setuptools in the venv: ``../venv/bin/python3 setup.py install``
 #. Install coverage in the venv
-#. Set PYTHONPATH to ``fullcoverage`` (will need to change the directory): ``export PYTHONPATH=../coverage-N.N/coverage/fullcoverage``
+#. Set PYTHONPATH to ``fullcoverage`` (need to change your directory): ``export PYTHONPATH=../coverage-N.N/coverage/fullcoverage``
 #. Run coverage from the venv: ``./bin/python -m coverage run --pylib -m test``
 #. Unset PYTHONPATH: ``unset PYTHONPATH``
 #. Generate coverage report: ``./bin/python -m coverage html --directory=../coverage_report -i --include="../cpython/Lib/*" --title="CPython test coverage report"``
@@ -135,13 +135,8 @@ Coverage.py
 #. Clean up the cpython clone: either ``make distclean`` or check it out again
 
 Do be aware that this step takes a few **hours**. If you find report generation
-is the bottleneck (typically because of memory pressure), you can generate the
-HTML reports in chunks at the cost of not having a comprehensive index. E.g. to
-report for every module/package starting with the letter 'a'::
-
-  ./bin/python3 -m coverage html --directory ../coverage_report -i ../cpython/Lib/a*.py ../cpython/Lib/a*/*.py ../cpython/Lib/a*/*/*.py
-
-You can then create an index using the textual report from coverage.py.
+is the bottleneck you can try using PyPy3 or your installed Python 3 interpreter
+to generate the report.
 
 .. _setuptools: https://pypi.python.org/pypi/setuptools
 .. _coverage: https://pypi.python.org/pypi/coverage
