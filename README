@@ -127,6 +127,7 @@ Coverage.py
 #. Install setuptools in the venv: ``../venv/bin/python3 setup.py install``
 #. Install coverage in the venv
 #. Set PYTHONPATH to ``fullcoverage`` (need to change your directory): ``export PYTHONPATH=../coverage-N.N/coverage/fullcoverage``
+#. ``unset CPPFLAGS`` in order to avoid using system Python header files
 #. Run coverage from the venv: ``./bin/python -m coverage run --pylib -m test``
 #. Unset PYTHONPATH: ``unset PYTHONPATH``
 #. Generate coverage report: ``./bin/python -m coverage html --directory=../coverage_report -i --include="../cpython/Lib/*" --title="CPython test coverage report"``
