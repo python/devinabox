@@ -58,7 +58,13 @@ if __name__ == '__main__':
     if arg_count > 1:
         raise ValueError(
                 '0 or 1 arguments expected, not {}'.format(arg_count))
-    executable = main(sys.argv[1] if arg_count else 'cpython')
+    elif arg_count == 1:
+        directory = sys.argv[1]
+    elif os.path.exists('cpython'):
+        directory = 'cpython'
+    else:
+        directory = '.'
+    executable = main(directory)
     if not executable:
         print('CPython executable NOT found')
     else:
