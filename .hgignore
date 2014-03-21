@@ -9,8 +9,6 @@ peps
 # Downloads
 coverage-*
 mercurial-*
-setuptools-*
-pip-*
 tortoisehg-*
 
 # Generated

@@ -17,7 +17,7 @@ Stuff to download
 The following sections outline various files to download and repositories to
 clone into your devinabox. Make sure to **NOT** change the directories that
 repositories are cloned into. The default names are assumed by the other files
-in the devinabox.
+in devinabox.
 
 When you are done you should have in this directory everything
 someone needs to contribute. Simply copy the whole directory to some sort of
@@ -26,7 +26,7 @@ people to copy somewhere on to their system. They can run ``hg pull -u`` to
 get updates, sparing the probably taxed internet connection at the sprint from
 doing complete repository cloning.
 
-If recreating from an old checkout ``hg purge --all`` in the individual
+If recreating from an old checkout, ``hg purge --all`` in the individual
 clones is a handy way to ensure old build artifacts have been removed.
 You will need to enable the purge extension in ``~/.hgrc``.
 
@@ -43,7 +43,7 @@ You will want to download the latest release of Mercurial
 (http://pypi.python.org/pypi/Mercurial) and TortoiseHg for Windows users
 (http://tortoisehg.bitbucket.org/download/). OS X users can be told that
 Mercurial is available through Homebrew if they prefer
-(XXX; if they use MacPorts or any other package manager then tell them they
+(if they use MacPorts or any other package manager then tell them they
 should switch to Homebrew at home as it handles Python the best and to use the
 download of Mercurial you have provided to save time).
 
@@ -60,11 +60,12 @@ suggestions.
 
 OS X users should be told to download XCode from the Apple App Store **ahead of
 time**. It's on the order of a couple GiB in size, so you don't want to have
-people downloading it at the sprint.
+people downloading it at the sprint. After installation they should also make
+sure to install the command-line tools (e.g. in Mavericks,
+``xcode-select --install``).
 
 If new contributors think they may be doing C development, suggest LLVM + clang
-for better error reporting than gcc. OS X users can get an up-to-date version
-of the toolchain through Homebrew.
+for better error reporting than gcc.
 
 For Windows users, tell them to download and install Visual C++ Express
 (http://www.microsoft.com/express/Downloads/) **ahead of time**.
@@ -76,12 +77,19 @@ CPython
 Clone the `CPython repository`_ and build it (you will be cleaning up your build
 later, though as a final step).
 
-Also make sure to build the documentation. This not only alleviates the need for
-everyone to build it from scratch, but it will also pull in copies of projects
-that users can rely on, if necessary, to build other documentation
-(e.g. everything needed to build the devguide). If the documentation starts
-being built by a repository build of CPython (and thus Python 3) this may no
-longer hold true.
+Also make sure to build the documentation. This alleviates the need for
+everyone to build it from scratch. To build the documentation, create a venv
+with sphinx installed and point the Doc Makefile at the Python linked to in the
+venv.
+
+All of this can be done by doing::
+
+  # Assuming at the top of the devinabox.
+  python build_cpython.py
+  ./cpython/python -m venv venv
+  ./venv/bin/pip install sphinx
+  cd cpython/Doc
+  make html PYTHON=../../venv/bin/python
 
 .. _CPython repository: http://hg.python.org/cpython
 
@@ -89,7 +97,8 @@ longer hold true.
 PEPs
 ----
 
-Clone the `PEP repository`_ and build it. That way if people need to reference a
+Clone the `PEP repository`_ and build it (use the venv you created to build the
+CPython docs if necessary). That way if people need to reference a
 PEP they can easily find itand will be able to use the easier-to-read HTML
 version.
 
@@ -104,14 +113,10 @@ own.
 Devguide
 --------
 
-Clone the `devguide repository`_ and build it. This gives people a local copy to
+Clone the `devguide repository`_ and build it (again, use the venv created to
+build the CPython docs if necessary). This gives people a local copy to
 use rather than having to use the (probably slow) internet connection at the
 sprint.
-
-If a new contributor needs to be able to build the devguide, they should only
-need to set their ``PYTHONPATH`` to point at the ``cpython/Doc/tools`` directory
-in the CPython repository thanks to the requisite projects being pulled in when
-you built the CPython documentation.
 
 .. _devguide repository: http://hg.python.org/devguide
 
@@ -119,21 +124,18 @@ you built the CPython documentation.
 Coverage.py
 -----------
 
-#. Download setuptools_
-#. Download coverage_
+#. Download coverage_ (need a special file that is not part of the normal
+   distribution of coverage, so can't just use pip)
 #. Build CPython: ``./build_cpython.py``
-#. Create an venv: ``./cpython/python.exe -m venv venv``
-#. Extract setuptools and coverage: ``tar -x -f setuptools-*.tar.gz; tar -x -f coverage-*.tar.gz``
-#. Install setuptools in the venv: ``../venv/bin/python3 setup.py install``
-#. Install coverage in the venv
-#. Set PYTHONPATH to ``fullcoverage`` (need to change your directory): ``export PYTHONPATH=../coverage-N.N/coverage/fullcoverage``
+#. Create an venv: ``./cpython/python -m venv venv``
+#. Extract coverage: ``tar -x -f coverage-*.tar.gz``
+#. Install coverage in the venv: ``./venv/bin/python coverage-*/setup.py install``
+#. Set PYTHONPATH to ``fullcoverage`` (need to change your directory to the venv):
+   ``export PYTHONPATH=../coverage-N.N/coverage/fullcoverage``
 #. ``unset CPPFLAGS`` in order to avoid using system Python header files
 #. Run coverage from the venv: ``./bin/python -m coverage run --pylib -m test``
 #. Unset PYTHONPATH: ``unset PYTHONPATH``
 #. Generate coverage report: ``./bin/python -m coverage html --directory=../coverage_report -i --include="../cpython/Lib/*" --title="CPython test coverage report"``
-#. Delete project directories (but not tar files!) for coverage and setuptools
-#. Delete venv
-#. Clean up the cpython clone: either ``make distclean`` or check it out again
 
 Do be aware that this step takes a few **hours**. If you find report generation
 is the bottleneck you can try using PyPy3 or your installed Python 3 interpreter
@@ -165,13 +167,3 @@ verifies that the expected CPython binary exists.
 While the devguide includes instructions on how to build under UNIX, the script
 just simplifies this by having a single command subsume both the configure and
 build steps. It also uses reasonable defaults (e.g. all cores on the CPU).
-
-
-``full_coverage.py``
----------------------
-
-As discussed earlier, this generates the coverage report for the standard
-library in the most thorough way possible. The ``run`` option can take specific
-tests as an argument. The ``html`` directory can take an argument for a
-directory to write to, but the default should not conflict with the original
-coverage run you did earlier (if you followed the directions =) .
