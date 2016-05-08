@@ -1,25 +1,38 @@
-devinabox -- Bootstrapping a Python core dev sprint
-/////////////////////////////////////////////////////////
+devinabox -- Bootstrapping a core Python sprint
+===============================================
 
-The devinabox project is meant to help a CPython core developer produce a
-directory which contains everything necessary to enable someone at a sprint
-(regardless of OS) to get set up quickly. This README is **NOT** meant for a new
-contributor! If you *are* a new contributor, ask the core developer leading your
-sprint about how to get started.
+The **devinabox** project helps an experienced CPython developer produce a
+directory which contains everything necessary to enable sprint participants
+to get set up quickly (regardless of OS).
 
-This README outlines two things: what to download to create a devinabox and what
-is provided to help new contributors.
+This README outlines two things:
+
+- what to download to create a devinabox
+- what is provided to help new contributors
+
+This README provides instructions for sprint leaders; it does not provide
+instructions for new contributors. If you are
+a **new contributor**, ask your sprint leader(s) about how to get started.
 
 
-Stuff to download
-=================
+Things to download to create a devinabox
+========================================
 
 The following sections outline various files to download and repositories to
-clone into your devinabox. Make sure to **NOT** change the directories that
-repositories are cloned into. The default names are assumed by the other files
-in devinabox.
+clone into your devinabox including:
 
-When you are done you should have in this directory everything
+- version control tools
+- compiler
+- CPython
+- PEPs
+- Devguide
+- coverage.py
+
+Be careful **NOT** to change the destination directories that
+repositories are cloned into. These default directory names are assumed by
+the other files in devinabox.
+
+When you are done you should have in the destination directory everything
 someone needs to contribute. Simply copy the whole directory to some sort of
 media (USB 3 drive and a CD tend to work well) and then pass it around for
 people to copy somewhere on to their system. They can run ``hg pull -u`` to
@@ -32,7 +45,7 @@ You will need to enable the purge extension in ``~/.hgrc``.
 
 Also make sure to not simply copy your own repositories to the box! Otherwise
 the clones will most likely have paths which use SSH and the hg account on
-hg.python.org which only core developers can use. It's just easier to make the
+hg.python.org which only core developers can use. It's easier to make the
 clones from scratch.
 
 
@@ -43,8 +56,7 @@ You will want to download the latest release of Mercurial
 (http://pypi.python.org/pypi/Mercurial) and TortoiseHg for Windows users
 (http://tortoisehg.bitbucket.org/download/). OS X users can be told that
 Mercurial is available through Homebrew if they prefer
-(if they use MacPorts or any other package manager then tell them they
-should switch to Homebrew at home as it handles Python the best and to use the
+(if they use MacPorts or any other package manager ask them to use the
 download of Mercurial you have provided to save time).
 
 Providing Mercurial guarantees there is no issue with new contributors trying to
@@ -54,9 +66,7 @@ update repositories or generating patches.
 A Compiler
 -----------
 
-Since you will most likely be dealing with developers this section is probably
-not important, but just in case you get questions about compilers, here are some
-suggestions.
+If you receive questions about compilers, here are some suggestions.
 
 OS X users should be told to download XCode from the Apple App Store **ahead of
 time**. It's on the order of a couple GiB in size, so you don't want to have
@@ -64,10 +74,10 @@ people downloading it at the sprint. After installation they should also make
 sure to install the command-line tools (e.g. in Mavericks,
 ``xcode-select --install``).
 
-If new contributors think they may be doing C development, suggest LLVM + clang
-for better error reporting than gcc.
+If new contributors think they may be doing C development, suggest the use of
+LLVM + clang as this provides better error reporting than gcc.
 
-For Windows users, tell them to download and install Visual C++ Express
+For Windows users, ask them to download and install Visual C++ Express
 (http://www.microsoft.com/express/Downloads/) **ahead of time**.
 
 
@@ -78,34 +88,31 @@ Clone the `CPython repository`_ and build it (you will be cleaning up your build
 later, though as a final step).
 
 Also make sure to build the documentation. This alleviates the need for
-everyone to build it from scratch. To build the documentation, create a venv
+sprint participants to build it from scratch. To build the documentation, create a venv
 with sphinx installed and point the Doc Makefile at the Python linked to in the
 venv.
 
 All of this can be done by doing::
 
-  # Assuming at the top of the devinabox.
+  # Assuming at the root of the devinabox directory
   python build_cpython.py
   ./cpython/python -m venv venv
   ./venv/bin/pip install sphinx
   cd cpython/Doc
   make html PYTHON=../../venv/bin/python
 
-.. _CPython repository: http://hg.python.org/cpython
+.. _CPython repository: https://github.com/python/devinabox
 
 
 PEPs
 ----
 
 Clone the `PEP repository`_ and build it (use the venv you created to build the
-CPython docs if necessary). That way if people need to reference a
-PEP they can easily find itand will be able to use the easier-to-read HTML
-version.
+CPython docs if necessary). This allows sprinters a local copy to reference
+for a PEP and it allows using the easier-to-read HTML version.
 
-No specific guidelines for building the PEPs are provided for new contributors
-since there is only a slim chance they will be editing a PEP, and if they are
-then they should be able to figure out how to get the PEPs to build on their
-own.
+No specific guidelines for building the PEPs are provided since there is only
+a slim chance sprint participants will be editing a PEP.
 
 .. _PEP repository: http://hg.python.org/peps
 
@@ -114,8 +121,8 @@ Devguide
 --------
 
 Clone the `devguide repository`_ and build it (again, use the venv created to
-build the CPython docs if necessary). This gives people a local copy to
-use rather than having to use the (probably slow) internet connection at the
+build the CPython docs if necessary). This gives sprinters a local copy to
+use rather than having to use the (often slow) internet connection at the
 sprint.
 
 .. _devguide repository: http://hg.python.org/devguide
@@ -145,25 +152,29 @@ to generate the report.
 .. _coverage: https://pypi.python.org/pypi/coverage
 
 
-Included files to help out
-==========================
+Helpful files for sprint participants
+=====================================
 
-A couple of files are included in order to make things a little bit easier for
-both you and the new contributors.
+Helpful files are included in order to make things a little bit easier for
+you, the sprint leader, as well as sprint participants and new contributors.
 
 
 ``index.html``
 --------------
 
-An HTML file with links to the various pieces of documentation you built
-previously and the helper scripts.
+An HTML file with links to:
+
+- documentation which you built previously
+- the helper scripts
 
 
 ``build_cpython.py``
 --------------------
-On UNIX-based OSs it builds the CPython repository. On all platforms it
+
+On UNIX-based OSs this file builds the CPython repository. On all platforms it
 verifies that the expected CPython binary exists.
 
-While the devguide includes instructions on how to build under UNIX, the script
-just simplifies this by having a single command subsume both the configure and
-build steps. It also uses reasonable defaults (e.g. all cores on the CPU).
+While the devguide includes instructions on how to build under UNIX, this
+script simplifies the process for sprint participants by having a single
+command to configure and build CPython. It also uses reasonable defaults
+(e.g. all cores on the CPU).
