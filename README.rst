@@ -10,7 +10,7 @@ This README outlines two things:
 - what to download to create a devinabox
 - what is provided to help new contributors
 
-This README provides instructions for sprint leaders; it does not provide
+This document provides instructions for sprint leaders; it does not provide
 instructions for new contributors. If you are
 a **new contributor**, ask your sprint leader(s) about how to get started.
 
