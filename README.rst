@@ -101,7 +101,7 @@ All of this can be done by doing::
   cd cpython/Doc
   make html PYTHON=../../venv/bin/python
 
-.. _CPython repository: https://github.com/python/devinabox
+.. _CPython repository: http://hg.python.org/cpython
 
 
 PEPs
