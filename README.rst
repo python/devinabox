@@ -77,9 +77,10 @@ sure to install the command-line tools (e.g. in Mavericks,
 If new contributors think they may be doing C development, suggest the use of
 LLVM + clang as this provides better error reporting than gcc.
 
-For Windows users, ask them to download and install Visual C++ Express
-(http://www.microsoft.com/express/Downloads/) **ahead of time**.
+For Windows users, ask them to download and install `Visual Studio Community
+edition`_ **ahead of time**.
 
+.. _Visual Studio Community edition: https://www.visualstudio.com/en-us/products/visual-studio-community-vs.aspx
 
 CPython
 -------
